@@ -16,3 +16,7 @@ comments.csv : image_id,username,comment_text<br>
 likes.csv : image_id,no_of_likes
 
 # Currently Cannot Video Files
+
+# Requires An Instagram Account to run
+
+username and password should be set as environment variables with names: USERNAME_INSTA and PASSWORD_INSTA
