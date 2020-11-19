@@ -15,7 +15,7 @@ Expects there to be 2 csv files<br>
 comments.csv : image_id,username,comment_text<br>
 likes.csv : image_id,no_of_likes
 
-# Currently Cannot Video Files
+# Currently Cannot Handle Video Files
 
 # Requires An Instagram Account to run
 
