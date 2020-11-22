@@ -7,12 +7,8 @@ from time import sleep
 import requests
 import os
 
-global driver
-driver = webdriver.Chrome()
 
-
-def go_to_instagram():
-    global driver
+def go_to_instagram(driver):
     driver.get('https://www.instagram.com/')
     driver.maximize_window()
     sleep(5)
@@ -33,7 +29,7 @@ def go_to_instagram():
         pass
 
 
-def get_image_and_comments():
+def get_image_and_comments(driver):
     # url,[comments]
     # comments : username,text
     return_url = ""
@@ -63,7 +59,7 @@ def get_image_and_comments():
             username  = comment.find_element_by_css_selector("div>a").get_property("href")
             username = username.split("/")[-2]
             message = comment.find_element_by_css_selector("div>li>div>div:first-child>div:nth-child(2)>span").text
-            message.replace(","," ")
+            message.replace(","," ").replace("\n"," ")
             comments.append((username,message))
 
     except NoSuchElementException:
@@ -72,7 +68,7 @@ def get_image_and_comments():
     return return_url,comments,likes,tp
 
 
-def finite_scroll():
+def finite_scroll(driver,to_download):
     SCROLL_PAUSE_TIME = 4.5
     times = 1
     total = 1000
@@ -80,7 +76,7 @@ def finite_scroll():
     f2 = open("comments.csv","a+")
     while True:
         sleep(1.2)
-        url,comments,likes,tp = get_image_and_comments()
+        url,comments,likes,tp = get_image_and_comments(driver)
         if url != "":
             likes = int("".join(likes.split(",")))
             if tp == "img":
@@ -98,7 +94,8 @@ def finite_scroll():
             f1.write(f"{times},{likes}\n")
             for comment in comments:
                 f2.write(f"{times},{comment[0]},{comment[1]}\n")
-
+            print(f"Iteration {times}")
+            print(*comments)
         if times==total:
             break
 
@@ -111,16 +108,17 @@ def finite_scroll():
     f1.close()
     f2.close()
 
-
-go_to_instagram()
-
-driver.get("https://www.instagram.com/upgrad_edu")
-sleep(2.5)
-
-# clicking the first image
-driver.find_element_by_css_selector("main>div>div:last-child>article>div>div>div>div>a").click()
-sleep(1)
-
-finite_scroll()
-
-# driver.close()
+if __name__ == '__main__':
+    driver = webdriver.Chrome()
+    go_to_instagram(driver)
+    try:
+        username = input("Enter a Username\n").strip()
+        to_download = input("Do you want to download the images:\n(y/n):\n").lower() == "y"
+        driver.get(f"https://www.instagram.com/{username}")
+        sleep(2.5)
+        driver.find_element_by_css_selector("main>div>div:last-child>article>div>div>div>div>a").click()
+        sleep(1)
+        finite_scroll(driver,to_download)
+    except Exception as e:
+        print(e)
+    # driver.close()
