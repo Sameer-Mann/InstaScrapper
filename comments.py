@@ -1,6 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -17,23 +15,23 @@ import sys
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-# git branch -M main
-# git push -u origin main
-def cleaning_comment(comment,CONTRACTIONS,SMILEY):
-    comment = sub("(@[A-Za-z0-9]+)|(#[A-Za-z0-9]+)", "", comment)
-    comment = ' '.join(sub("(\w+:\/\/\S+)", " ", comment).split())
-    comment = sub("[\.\,\!\?\:\;\-\=]", "", comment)
+
+def cleaning_comment(comment, CONTRACTIONS, SMILEY):
+    comment = sub(r"(@[A-Za-z0-9]+)|(#[A-Za-z0-9]+)", "", comment)
+    comment = ' '.join(sub(r"(\w+:\/\/\S+)", " ", comment).split())
+    comment = sub(r"[\.\,\!\?\:\;\-\=]", "", comment)
     # comment = comment.lower()
-    comment = comment.replace("’","'")
+    comment = comment.replace("’", "'")
     words = comment.split()
-    reformed = [CONTRACTIONS[word] if word in CONTRACTIONS else word for word in words]
+    reformed = [CONTRACTIONS[word] if word in CONTRACTIONS else word
+                for word in words]
     comment = " ".join(reformed)
     words = comment.split()
     reformed = [SMILEY[word] if word in SMILEY else word for word in words]
     comment = " ".join(reformed)
     comment = demojize(comment)
-    comment = comment.replace(":"," ").replace("_"," ")
-    comment = sub("[^A-Za-z0-9\s]","",comment)
+    comment = comment.replace(":", " ").replace("_", " ")
+    comment = sub(r"[^A-Za-z0-9\s]", "", comment)
     comment = ' '.join(comment.split())
     return comment
 
@@ -41,26 +39,29 @@ def cleaning_comment(comment,CONTRACTIONS,SMILEY):
 def scroll(driver):
     try:
         element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div>ul>li>div>button"))
+            EC.presence_of_element_located((By.CSS_SELECTOR,
+                                            "div>ul>li>div>button"))
         )
         element.click()
-        sleep(randint(1,6))
-    except:
+        sleep(randint(1, 6))
+    except (TimeoutError, NoSuchElementException):
         pass
 
 
-def load_comments(driver,CONTRACTIONS,SMILEY,no_of_comments=500):
+def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500):
     comments = []
-    no_of_iterations = no_of_comments//12 + int(no_of_comments%12 > 0)
+    no_of_iterations = no_of_comments//12 + int(no_of_comments % 12 > 0)
     try:
         for _ in range(no_of_iterations):
             comments_list = driver.find_elements_by_css_selector("div>ul>ul")
             for comment in comments_list:
-                text = comment.find_element_by_css_selector("div>span:nth-child(2)").text
-                cleaned = cleaning_comment(text,CONTRACTIONS,SMILEY)
+                text = comment.find_element_by_css_selector(
+                    "div>span:nth-child(2)").text
+                cleaned = cleaning_comment(text, CONTRACTIONS, SMILEY)
                 if len(cleaned):
                     comments.append(cleaned)
-            driver.execute_script("document.querySelectorAll('div>ul>ul').forEach(obj=>obj.remove());")
+            driver.execute_script("document.querySelectorAll('div>ul>ul')\
+                                .forEach(obj=>obj.remove());")
             scroll(driver)
     except NoSuchElementException:
         pass
@@ -68,22 +69,20 @@ def load_comments(driver,CONTRACTIONS,SMILEY,no_of_comments=500):
 
 
 def load_dict_smileys():
-    
-    return load(open("emoticon.json","r"))
+    return load(open("emoticon.json", "r"))
 
 
 def load_dict_contractions():
-    
-    return load(open("contractions.json","r"))
+    return load(open("contractions.json", "r"))
 
 
-def write_data(comments,fname):
+def write_data(comments, fname):
     analyser = SentimentIntensityAnalyzer()
-    with open(f"{fname}.csv","w") as f:
+    with open(f"{fname}.csv", "w") as f:
         f.write("comment,negative,neutral,positive,compound\n")
-        for i,comment in enumerate(comments):
-            f.write(",".join([comment]+[*map(str,analyser.polarity_scores(comment).values())])+"\n")
-
+        for _, comment in enumerate(comments):
+            f.write(",".join([comment] + [*map(str,
+                    analyser.polarity_scores(comment).values())])+"\n")
 
 
 if __name__ == "__main__":
@@ -95,7 +94,7 @@ if __name__ == "__main__":
     go_to_instagram(driver)
     driver.get(post_url)
 
-    comments = load_comments(driver,CONTRACTIONS,SMILEY)
+    comments = load_comments(driver, CONTRACTIONS, SMILEY)
     fname = post_url.split("/")[-2]
-    
-    write_data(comments,fname)
+
+    write_data(comments, fname)
