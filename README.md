@@ -1,17 +1,13 @@
 # InstaScrapper
 Uses Selenium to Automate The Chrome Browser<br>
-Requirements<br>
-<ul>
-<li>Python >= 3.7</li>
-<li>Selenium</li>
-</ul>
-
+To Install Requirements Use<br>
+```
+pip install -r requirements.txt
+```
 ```
 python scrapper.py
 ```
-
-It Downloads the images in the same directory as the script. To turn off the download comment the lines 87-90.
-Expects there to be 2 csv files<br>
+Writes the output in 2 csv files<br>
 comments.csv : image_id,username,comment_text<br>
 likes.csv : image_id,no_of_likes
 
@@ -19,4 +15,7 @@ likes.csv : image_id,no_of_likes
 
 # Requires An Instagram Account to run
 
+# Comments
+This file extracts the no. of comments you want from a post and writes them to a file after cleaning them and also analyses the comments sentiments<br>
+Outputs: post_id.csv : comment,negative,neutral,positive,compound <br>
 username and password should be set as environment variables with names: USERNAME_INSTA and PASSWORD_INSTA

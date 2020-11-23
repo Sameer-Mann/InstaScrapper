@@ -39,8 +39,6 @@ def get_image_and_comments(driver):
     try:
         image_area = driver.find_element_by_css_selector("div[role='dialog']>article>:nth-child(3)")
         comment_area = driver.find_element_by_css_selector("div[role='dialog']>article>:nth-child(4)")
-        
-
         try:    
             img = image_area.find_element_by_css_selector("div>img")
             url = img.get_property("src")
@@ -53,7 +51,6 @@ def get_image_and_comments(driver):
             # return_url = url
             # tp="video"
             # likes = comment_area.find_elements_by_css_selector("div[class]>span>span")[2].text
-
         comments_list = comment_area.find_elements_by_css_selector("div[class]>ul>ul")
         for comment in comments_list[1:]:
             username  = comment.find_element_by_css_selector("div>a").get_property("href")
@@ -61,45 +58,41 @@ def get_image_and_comments(driver):
             message = comment.find_element_by_css_selector("div>li>div>div:first-child>div:nth-child(2)>span").text
             message.replace(","," ").replace("\n"," ")
             comments.append((username,message))
-
     except NoSuchElementException:
         pass
-
     return return_url,comments,likes,tp
 
 
 def finite_scroll(driver,to_download):
     SCROLL_PAUSE_TIME = 4.5
-    times = 1
     total = 1000
     f1 = open("likes.csv","a+")
+    f1.write("id,likes\n")
     f2 = open("comments.csv","a+")
-    while True:
+    f2.write("id,username,comment\n")
+    for times in range(total):
         sleep(1.2)
         url,comments,likes,tp = get_image_and_comments(driver)
         if url != "":
             likes = int("".join(likes.split(",")))
-            if tp == "img":
-                data = requests.get(url)
-                if data.status_code == 200:
-                    with open(f"{times}.jpg",'wb') as f:
-                        f.write(data.content)
+            if to_download:
+                if tp == "img":
+                    data = requests.get(url)
+                    if data.status_code == 200:
+                        with open(f"{times}.jpg",'wb') as f:
+                            f.write(data.content)
 
-            else:
-                r = requests.get(url,stream=True)
-                with open(f"{times}.mp4",'wb') as f:
-                    for chunk in r.iter_content(chunk_size = 1024*1024): 
-                        if chunk: 
-                            f.write(chunk)
+                else:
+                    r = requests.get(url,stream=True)
+                    with open(f"{times}.mp4",'wb') as f:
+                        for chunk in r.iter_content(chunk_size = 1024*1024): 
+                            if chunk: 
+                                f.write(chunk)
             f1.write(f"{times},{likes}\n")
             for comment in comments:
                 f2.write(f"{times},{comment[0]},{comment[1]}\n")
             print(f"Iteration {times}")
             print(*comments)
-        if times==total:
-            break
-
-        times += 1
         next_btn = driver.find_element_by_css_selector("div[role='dialog']>div>div>div>a:last-child")
         if next_btn is None:
             break
