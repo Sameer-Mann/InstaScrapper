@@ -17,33 +17,35 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
 def cleaning_comment(comment, CONTRACTIONS, SMILEY):
-    comment = sub(r"(@[A-Za-z0-9]+)|(#[A-Za-z0-9]+)", "", comment)
-    comment = ' '.join(sub(r"(\w+:\/\/\S+)", " ", comment).split())
-    comment = sub(r"[\.\,\!\?\:\;\-\=]", "", comment)
-    # comment = comment.lower()
-    comment = comment.replace("’", "'")
-    words = comment.split()
-    reformed = [CONTRACTIONS[word] if word in CONTRACTIONS else word
-                for word in words]
-    comment = " ".join(reformed)
-    words = comment.split()
-    reformed = [SMILEY[word] if word in SMILEY else word for word in words]
-    comment = " ".join(reformed)
+    comment = sub(r"(@[A-Za-z0-9]+)|(#[A-Za-z0-9]+)|(\w+:\/\/\S+)",
+                  " ", comment)
     comment = demojize(comment)
-    comment = comment.replace(":", " ").replace("_", " ")
-    comment = sub(r"[^A-Za-z0-9\s]", "", comment)
-    comment = ' '.join(comment.split())
+    mapping = {"’": "'", "!": "!"}
+    def check(s):
+        if s in CONTRACTIONS:
+            return CONTRACTIONS[s]
+        if s in SMILEY:
+            return SMILEY[s]
+        ns = ""
+        for char in s:
+            if char in mapping:
+                ns += mapping[char]
+            else:
+                ns += char if char.isalnum() else " "
+        return ns
+    reformed = [check(word) for word in comment.split()]
+    comment = " ".join(reformed)
+    comment = sub(r"([^A-Za-z0-9\s]+)", "", comment)
+    comment = " ".join(comment.split())
     return comment
 
 
 def scroll(driver):
     try:
-        element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR,
-                                            "div>ul>li>div>button"))
-        )
-        element.click()
-        sleep(randint(1, 6))
+        WebDriverWait(driver, 4).until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR,"div>ul>li>div>button"))
+        ).click()
     except (TimeoutError, NoSuchElementException):
         pass
 
@@ -52,6 +54,11 @@ def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500):
     comments = []
     no_of_iterations = no_of_comments//12 + int(no_of_comments % 12 > 0)
     try:
+        WebDriverWait(driver, 3).until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR,"div>ul>ul"))
+        )
+        analyser = SentimentIntensityAnalyzer()
         for _ in range(no_of_iterations):
             comments_list = driver.find_elements_by_css_selector("div>ul>ul")
             for comment in comments_list:
@@ -59,11 +66,13 @@ def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500):
                     "div>span:nth-child(2)").text
                 cleaned = cleaning_comment(text, CONTRACTIONS, SMILEY)
                 if len(cleaned):
-                    comments.append(cleaned)
+                    d={"comment": cleaned}
+                    d.update(analyser.polarity_scores(cleaned))
+                    comments.append(d)
             driver.execute_script("document.querySelectorAll('div>ul>ul')\
                                 .forEach(obj=>obj.remove());")
             scroll(driver)
-    except NoSuchElementException:
+    except (NoSuchElementException, TimeoutError):
         pass
     return comments
 
@@ -76,13 +85,11 @@ def load_dict_contractions():
     return load(open("contractions.json", "r"))
 
 
-def write_data(comments, fname):
-    analyser = SentimentIntensityAnalyzer()
+def write_data_to_csv(comments, fname):
     with open(f"{fname}.csv", "w") as f:
-        f.write("comment,negative,neutral,positive,compound\n")
-        for _, comment in enumerate(comments):
-            f.write(",".join([comment] + [*map(str,
-                    analyser.polarity_scores(comment).values())])+"\n")
+        f.write(",".join(map(str, comments[0].keys())) + "\n")
+        for obj in comments:
+            f.write(",".join(map(str, obj.values())) + "\n")
 
 
 if __name__ == "__main__":
@@ -97,4 +104,4 @@ if __name__ == "__main__":
     comments = load_comments(driver, CONTRACTIONS, SMILEY)
     fname = post_url.split("/")[-2]
 
-    write_data(comments, fname)
+    write_data_to_csv(comments, fname)
