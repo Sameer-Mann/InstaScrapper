@@ -4,7 +4,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from scrapper import go_to_instagram
 from emoji import demojize
 
 from json import load
@@ -35,7 +34,7 @@ def cleaning_comment(comment, CONTRACTIONS, SMILEY):
         return ns
     reformed = [check(word) for word in comment.split()]
     comment = " ".join(reformed)
-    comment = sub(r"([^A-Za-z0-9\s]+)", "", comment)
+    comment = sub(r"([^A-Za-z0-9\s]+)", " ", comment)
     comment = " ".join(comment.split())
     return comment
 
@@ -91,17 +90,3 @@ def write_data_to_csv(comments, fname):
         for obj in comments:
             f.write(",".join(map(str, obj.values())) + "\n")
 
-
-if __name__ == "__main__":
-    post_url = sys.argv[2]
-    CONTRACTIONS = load_dict_contractions()
-    SMILEY = load_dict_smileys()
-    driver = webdriver.Chrome()
-
-    go_to_instagram(driver)
-    driver.get(post_url)
-
-    comments = load_comments(driver, CONTRACTIONS, SMILEY)
-    fname = post_url.split("/")[-2]
-
-    write_data_to_csv(comments, fname)

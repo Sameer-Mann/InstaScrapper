@@ -1,0 +1,86 @@
+[
+    {
+      "comment": "black heart black heart black heart black heart black heart black heart",
+      "compound": 0.9803,
+      "neg": 0,
+      "neu": 0.192,
+      "pos": 0.808
+    },
+    {
+      "comment": "face blowing a kiss smiling face with heart eyes so cute",
+      "compound": 0.923,
+      "neg": 0,
+      "neu": 0.345,
+      "pos": 0.655
+    },
+    {
+      "comment": "NYC",
+      "compound": 0,
+      "neg": 0,
+      "neu": 1,
+      "pos": 0
+    },
+    {
+      "comment": "smiling face with heart eyes smiling face with heart eyes smiling face with heart eyes",
+      "compound": 0.9705,
+      "neg": 0,
+      "neu": 0.294,
+      "pos": 0.706
+    },
+    {
+      "comment": "yellow heart yellow heart",
+      "compound": 0.8555,
+      "neg": 0,
+      "neu": 0.192,
+      "pos": 0.808
+    },
+    {
+      "comment": "heart exclamation heart exclamation",
+      "compound": 0.8555,
+      "neg": 0,
+      "neu": 0.192,
+      "pos": 0.808
+    },
+    {
+      "comment": "fire fire fire",
+      "compound": -0.7351,
+      "neg": 1,
+      "neu": 0,
+      "pos": 0
+    },
+    {
+      "comment": "red heart selector red heart selector kiss mark kiss mark red heart selector red heart selector kiss mark kiss mark kiss mark kiss mark",
+      "compound": 0.9868,
+      "neg": 0,
+      "neu": 0.294,
+      "pos": 0.706
+    },
+    {
+      "comment": "smiling face with heart eyes red heart",
+      "compound": 0.9081,
+      "neg": 0,
+      "neu": 0.26,
+      "pos": 0.74
+    },
+    {
+      "comment": "blue heart",
+      "compound": 0.6369,
+      "neg": 0,
+      "neu": 0.192,
+      "pos": 0.808
+    },
+    {
+      "comment": "red heart selector red heart selector red heart selector red heart selector",
+      "compound": 0.9571,
+      "neg": 0,
+      "neu": 0.323,
+      "pos": 0.677
+    },
+    {
+      "comment": "Beautifulllll fire fire fire smiling face with heart eyes smiling face with heart eyes",
+      "compound": 0.8481,
+      "neg": 0.252,
+      "neu": 0.245,
+      "pos": 0.503
+    }
+  ]

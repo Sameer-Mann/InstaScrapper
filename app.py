@@ -1,11 +1,18 @@
 from flask import Flask, jsonify, request
-from scrapper import go_to_instagram
+from scrapper import selenium_driver
 from flask_cors import CORS
 from comments import load_comments, webdriver,\
     load_dict_contractions, load_dict_smileys
+import atexit
+import os
 
 global chrome_driver, contractions,\
         smileys, comments, page_id
+
+def OnExitApp(user):
+    chrome_driver.quit()
+
+atexit.register(OnExitApp,user="sameer")
 
 app = Flask(__name__)
 CORS(app)
@@ -23,11 +30,11 @@ def analyse_comments(post_id):
         try:
             page_id = int(request.args.get("pageId", 0))
             if post_id not in comments:
-                chrome_driver.get(f"https://instagram.com/p/{post_id}")
+                chrome_driver.driver.get(f"https://instagram.com/p/{post_id}")
                 comments[post_id] = []
             if page_id == len(comments[post_id]):
                 comments[post_id].append(
-                    load_comments(chrome_driver, contractions, smileys, 12))
+                    load_comments(chrome_driver.driver, contractions, smileys, 12))
             response = comments[post_id][page_id]
         except Exception as e:
             print(e)
@@ -35,8 +42,8 @@ def analyse_comments(post_id):
         return jsonify(response)
 
 if __name__ == "__main__":
-    chrome_driver = webdriver.Chrome()
-    go_to_instagram(chrome_driver)
+    chrome_driver = selenium_driver()
+    chrome_driver.go_to_site()
     contractions = load_dict_contractions()
     comments = {}
     smileys = load_dict_smileys()

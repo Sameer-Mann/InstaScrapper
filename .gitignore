@@ -5,5 +5,4 @@ __pycache__
 .vscode
 Pipfile
 Pipfile.lock
-angular/
 cookies

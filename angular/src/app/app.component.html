@@ -1,0 +1,10 @@
+<input #inputData type="text">
+<button (click)="handleNext(0,inputData.value)">Load Comments</button>
+<button (click)="handleNext(-1,inputData.value)">Load Prev</button>
+<button (click)="handleNext(1,inputData.value)">Load Next</button>
+<div *ngIf="comments">
+  <ul *ngFor="let data of comments">
+      <li>{{data.comment}} - {{data.pos}} - {{data.neg}} - {{data.compound}} - {{data.neu}}</li>
+    </ul>
+</div>
+<h1 *ngIf="errorMsg" style="color: rgb(254, 61, 2);">{{errorMsg}}</h1>

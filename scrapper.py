@@ -11,18 +11,20 @@ import os
 
 from pickle import load,dump
 
+INSTA_URL = "https://www.instagram.com"
 class selenium_driver(object):
     """
     Provides saving session info support.
     Stores the seesion in binary format so it cannot be
     misused
     """
-    def __init__(self,cookies_path,allowed_domains=[".instagram.com"]):
+    def __init__(self,cookies_path=os.getcwd(),allowed_domains=[".instagram.com"]):
         self.options = webdriver.ChromeOptions()
         self.driver = webdriver.Chrome(options=self.options)
         self.driver.maximize_window()
         self.domains = allowed_domains
         self.cookies_path = cookies_path
+        self.logged_in = False
         self.cookies = []
         try:
             if "cookies" in os.listdir(cookies_path):
@@ -32,7 +34,7 @@ class selenium_driver(object):
         except Exception as e:
             print(e)
 
-    def go_to_site(self,url):
+    def go_to_site(self,url=INSTA_URL):
         domain = url.split("www")[1].split("/")[0]
         self.driver.get(url)
         flag=False
@@ -42,13 +44,18 @@ class selenium_driver(object):
                 flag=True
         if flag:
             self.driver.get(url)
+            self.logged_in = is_logged_in(self.driver)
+        if not self.logged_in:
+            if INSTA_URL == self.driver.current_url:
+                self.login_to_instagram()
+                clickNoNotification(self.driver)
 
     def save_cookies(self):
         cookies = self.driver.get_cookies()
         for cookie in cookies:
             if cookie not in self.cookies:
                 self.cookies.append(cookie)
-        dump(self.cookies,open("cookies","wb"))
+        dump(self.cookies,open("cookies","a+b"))
 
     def close_all(self):    
         if len(self.driver.window_handles) < 1:
@@ -62,44 +69,52 @@ class selenium_driver(object):
         self.close_all()
         self.driver.quit()
 
+    def login_to_instagram(self):
+        user = WebDriverWait(self.driver,3).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR,
+                    "input[aria-label='Phone number, username, or email']")
+            ))
+        password = self.driver.find_element_by_css_selector(
+            "input[aria-label='Password']")
+        login_btn = self.driver.find_element_by_css_selector("button")
+        ActionChains(self.driver).move_to_element(user)\
+            .click().send_keys(os.getenv("USERNAME_INSTA")).perform()
+        ActionChains(self.driver).move_to_element(password)\
+            .click().send_keys(os.getenv("PASSWORD_INSTA")).perform()
+        login_btn.click()
+        save_info_selector = "main>div>div>div>section>div>button"
+        # "main>div>div>div>div:nth-child(1)" not save selector
+        try:
+            WebDriverWait(self.driver,3).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR,
+                    save_info_selector)
+            )).click()
+            sleep(2)
+            clickNoNotification(self.driver)
+        except NoSuchElementException:
+            pass
+        self.logged_in = True
+
 def is_logged_in(driver):
-    logged_in = True
+    logged_in = False
     try:
         driver.find_element_by_css_selector(
             "input[aria-label='Phone number, username, or email']")
     except NoSuchElementException:
-        logged_in=False
+        logged_in = True
         pass
     return logged_in
 
-def login_to_instagram(driver):
-    user = WebDriverWait(driver,3).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR,
-                "input[aria-label='Phone number, username, or email']")
-        ))
-    password = driver.find_element_by_css_selector(
-        "input[aria-label='Password']")
-    login_btn = driver.find_element_by_css_selector("button")
-    ActionChains(driver).move_to_element(user)\
-        .click().send_keys(os.getenv("USERNAME_INSTA")).perform()
-    ActionChains(driver).move_to_element(password)\
-        .click().send_keys(os.getenv("PASSWORD_INSTA")).perform()
-    login_btn.click()
+def clickNoNotification(driver):
+    selector1 = "div[role='dialog']>div>div>div:nth-child(3)>button:last-child"
+    selector2 = "div[role='dialog']>div>div>div:nth-child(3)>button:nth-child(2)"
     try:
-        save_info_selector = "main>div>div>div>section>div>button"
-        WebDriverWait(driver,3).until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR,
-                "main>div>div>div>div:nth-child(1)")
-        )).click()
-        sleep(2)
-        noNotificationSelector = "div[role='dialog']>div>div>div:nth-child(3)>button:last-child"
-        try:
-            driver.find_element_by_css_selector(noNotificationSelector).click()
-        except NoSuchElementException:
-            driver.find_element_by_css_selector(
-                "div[role='dialog']>div>div>div:nth-child(3)>button\
-                    :nth-child(2)").click()
+        driver.find_element_by_css_selector(selector1).click()
+    except NoSuchElementException:
+        pass
+    try:
+        driver.find_element_by_css_selector(selector2).click()
     except NoSuchElementException:
         pass
 
@@ -185,23 +200,3 @@ def finite_scroll(driver, to_download):
         sleep(SCROLL_PAUSE_TIME)
     f1.close()
     f2.close()
-
-
-if __name__ == '__main__':
-    driver = selenium_driver()
-    driver.go_to_site("https://www.instagram.com")
-    if not logged_in():
-        login_to_instagram(driver.driver)
-    try:
-        username = input("Enter a Username\n").strip()
-        to_download = input(
-            "Do you want to download the images:\n(y/n):\n").lower() == "y"
-        driver.driver.get(f"https://www.instagram.com/{username}")
-        sleep(2.5)
-        driver.driver.find_element_by_css_selector(
-            "main>div>div:last-child>article>div>div>div>div>a").click()
-        sleep(1)
-        driver.finite_scroll(to_download)
-    except Exception as e:
-        print(e)
-    driver.quit()
