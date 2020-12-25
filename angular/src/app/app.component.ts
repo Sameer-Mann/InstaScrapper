@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { comment } from './comment';
 import { FetchDataService } from './fetch-data.service';
+import { DomSanitizer } from '@angular/platform-browser';
+
 
 @Component({
   selector: 'app-root',
@@ -13,9 +15,15 @@ export class AppComponent implements OnInit {
   public comments: Array<comment> = [];
   public errorMsg="";
   public pageId = 0;
-  constructor (private _fetchDataServe: FetchDataService){
+  public imgSrc="";
+  public prevId="";
+  constructor (private _fetchDataServe: FetchDataService,private sanitize: DomSanitizer){
   }
   handleNext(val : number,data : string){
+    if(data != this.prevId){
+      this.pageId=0
+      this.prevId = data;
+    };
     this.pageId += val;
     console.log(this.pageId);
     this.handleLoad({"postId":data,"pageId":this.pageId});
@@ -25,6 +33,16 @@ export class AppComponent implements OnInit {
     this._fetchDataServe.getData(data.postId,data.pageId)
     .subscribe(data => this.comments=data,
                error => this.errorMsg = error);
+  }
+  loadImage(postId : string){
+    this._fetchDataServe.getImage(postId)
+    .subscribe(data=>{
+      var url:string = JSON.stringify(
+        this.sanitize.bypassSecurityTrustUrl(
+          JSON.stringify(data)));
+      console.log(url);
+      this.imgSrc = url;
+    });
   }
   ngOnInit(){
   }

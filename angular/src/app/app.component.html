@@ -2,6 +2,8 @@
 <button (click)="handleNext(0,inputData.value)">Load Comments</button>
 <button (click)="handleNext(-1,inputData.value)">Load Prev</button>
 <button (click)="handleNext(1,inputData.value)">Load Next</button>
+<button (click)="loadImage(inputData.value)">Load Image</button>
+<img src={{imgSrc}}>
 <div *ngIf="comments">
   <ul *ngFor="let data of comments">
       <li>{{data.comment}} - {{data.pos}} - {{data.neg}} - {{data.compound}} - {{data.neu}}</li>

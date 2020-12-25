@@ -31,4 +31,8 @@ export class FetchDataService {
     return this.http.get<comment[]>(`${this.dummyUrl}/${postId}`,{params: Params})
     .pipe(catchError(this.handleError));
   }
+  getImage(postId : string){
+    return this.http.get<JSON>(`${this.dummyUrl}/image/${postId}`)
+    .pipe(catchError(this.handleError));
+  }
 }

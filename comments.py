@@ -48,6 +48,16 @@ def scroll(driver):
     except (TimeoutError, NoSuchElementException):
         pass
 
+def get_image_url(driver):
+    url = ""
+    try:
+        url = WebDriverWait(driver, 1.5).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR,"div>img"))
+            ).get_property("src")
+    except TimeoutError:
+        pass
+    return url
 
 def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500):
     comments = []
