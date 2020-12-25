@@ -4,18 +4,20 @@ To Install Requirements Use<br>
 ```
 pip install -r requirements.txt
 ```
+# Scrapper.py
+It contains functions that are used to extract images and the selenium driver class that provides saving of cookies.
+
+# Comments.py
+This file contains the functions for extracting the no. of comments you want(load_comments).
+
+# How To Use
 ```
-python scrapper.py
+python app.py
 ```
-Writes the output in 2 csv files<br>
-comments.csv : image_id,username,comment_text<br>
-likes.csv : image_id,no_of_likes
+This runs the flask api and logins to instaram (username and password should be set as environment variables with names: USERNAME_INSTA and PASSWORD_INSTA) and also saves the cookies.<br>
 
-# Currently Cannot Handle Video Files
-
-# Requires An Instagram Account to run
-
-# Comments
-This file extracts the no. of comments you want from a post and writes them to a file after cleaning them and also analyses the comments sentiments<br>
-Outputs: post_id.csv : comment,negative,neutral,positive,compound <br>
-username and password should be set as environment variables with names: USERNAME_INSTA and PASSWORD_INSTA
+After the api is running navigate to the angular directory and run
+```
+ng serve
+```
+This will run the angular frontend(may take some seconds).In the input dialog box provide a post_id and click on load comments and it will load the comments below as a unordered list
