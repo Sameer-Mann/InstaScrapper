@@ -10,12 +10,13 @@ from json import load
 from re import sub
 from time import sleep
 from random import randint
+from typing import Dict, List
 import sys
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
-def cleaning_comment(comment, CONTRACTIONS, SMILEY):
+def cleaning_comment(comment: str, CONTRACTIONS: Dict[str,str], SMILEY: Dict[str,str]) -> str:
     comment = sub(r"(@[A-Za-z0-9]+)|(#[A-Za-z0-9]+)|(\w+:\/\/\S+)",
                   " ", comment)
     comment = demojize(comment)
@@ -39,7 +40,7 @@ def cleaning_comment(comment, CONTRACTIONS, SMILEY):
     return comment
 
 
-def scroll(driver):
+def scroll(driver) -> None:
     try:
         WebDriverWait(driver, 4).until(
             EC.presence_of_element_located(
@@ -48,7 +49,7 @@ def scroll(driver):
     except (TimeoutError, NoSuchElementException):
         pass
 
-def get_image_url(driver):
+def get_image_url(driver) -> str:
     url = ""
     try:
         url = WebDriverWait(driver, 1.5).until(
@@ -59,7 +60,7 @@ def get_image_url(driver):
         pass
     return url
 
-def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500):
+def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500) -> List[str]:
     comments = []
     no_of_iterations = no_of_comments//12 + int(no_of_comments % 12 > 0)
     try:
@@ -86,15 +87,15 @@ def load_comments(driver, CONTRACTIONS, SMILEY, no_of_comments=500):
     return comments
 
 
-def load_dict_smileys():
+def load_dict_smileys() -> Dict[str,str]:
     return load(open("emoticon.json", "r"))
 
 
-def load_dict_contractions():
+def load_dict_contractions() -> Dict[str,str]:
     return load(open("contractions.json", "r"))
 
 
-def write_data_to_csv(comments, fname):
+def write_data_to_csv(comments, fname) -> None:
     with open(f"{fname}.csv", "w") as f:
         f.write(",".join(map(str, comments[0].keys())) + "\n")
         for obj in comments:
